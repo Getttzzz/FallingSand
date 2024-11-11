@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -15,10 +16,12 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,14 +49,27 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen(modifier: Modifier = Modifier, viewModel: MainScreenViewModel) {
-    val grid = viewModel.grid.collectAsState()
-    println("GETZ.<top>.MainScreen--> grid.value.text=${grid.value.counter}")
+    val grid by viewModel.grid.collectAsState()
+
+    //clickPosition=Offset(x=232.0, y=12.9) -> top right corner
+
     Column(modifier = modifier) {
-        Text(text = "Counter=${grid.value.counter}", fontSize = 40.sp)
-        Canvas(modifier = modifier.background(Color.LightGray)) {
-            for (i in 0 until MainScreenViewModel.ROWS) {
-                for (j in 0 until MainScreenViewModel.COLS) {
-                    val calculatedColor = if (grid.value.gridValue[i][j] == 0) Color.Black else Color.White
+        Text(text = "Counter=${grid.counter}", fontSize = 20.sp)
+
+        Canvas(
+            modifier = modifier
+                .background(Color.LightGray)
+                .pointerInput(Unit) {
+                    detectTapGestures {offset ->
+                        viewModel.setClickPosition(offset.x, offset.y)
+                    }
+                }
+        ) {
+            for (i in 0 until MainScreenViewModel.COLS) {
+                for (j in 0 until MainScreenViewModel.ROWS) {
+
+                    val calculatedColor = if (grid.gridValue[i][j] == 0) Color.Black else Color.White
+
                     drawRect(color = calculatedColor, topLeft = Offset(i * PIXEL, j * PIXEL), size = Size(PIXEL, PIXEL))
                 }
             }
