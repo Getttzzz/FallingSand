@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlin.math.round
+import kotlin.random.Random
 
 class MainScreenViewModel : ViewModel() {
 
@@ -39,16 +40,26 @@ class MainScreenViewModel : ViewModel() {
                         if (state == 1) {
 
                             val below = if (j < ROWS - 1) grid[i][j + 1] else -1 //-1 is to set 1 for current ij
-                            val belowR = if (i < COLS - 1 && j< ROWS-1) grid[i + 1][j+1] else -1
-                            val belowL = if (i > 0 && j< ROWS-1) grid[i - 1][j+1] else -1
-                            if (j == ROWS -1){
+
+                            val dir = if (Random.nextBoolean()) 1 else -1
+
+                            val belowA = if (i + dir >= 0 && i + dir <= COLS - 1 && j < ROWS - 1) {
+                                grid[i + dir][j + 1]
+                            } else -1
+
+                            val belowB = if (i - dir >= 0 && i - dir <= COLS - 1 && j < ROWS - 1) {
+                                grid[i - dir][j + 1]
+                            } else -1
+
+
+                            if (j == ROWS - 1) {
                                 nextGrid[i][j] = 1
-                            }else if (below == 0) {
+                            } else if (below == 0) {
                                 nextGrid[i][j + 1] = 1
-                            } else if (belowR == 0) {
-                                nextGrid[i + 1][j] = 1
-                            } else if (belowL == 0) {
-                                nextGrid[i - 1][j] = 1
+                            } else if (belowA == 0) {
+                                nextGrid[i + dir][j + 1] = 1
+                            } else if (belowB == 0) {
+                                nextGrid[i - dir][j + 1] = 1
                             } else {
                                 nextGrid[i][j] = 1
                             }
