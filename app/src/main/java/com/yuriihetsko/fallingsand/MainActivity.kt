@@ -51,13 +51,10 @@ class MainActivity : ComponentActivity() {
 fun MainScreen(modifier: Modifier = Modifier, viewModel: MainScreenViewModel) {
     val grid by viewModel.grid.collectAsState()
 
-    //clickPosition=Offset(x=232.0, y=12.9) -> top right corner
-
     Column(modifier = modifier) {
-        Text(text = "Counter=${grid.counter}", fontSize = 20.sp)
-
         Canvas(
-            modifier = modifier
+            modifier = Modifier
+                .fillMaxSize()
                 .background(Color.LightGray)
                 .pointerInput(Unit) {
                     detectTapGestures {offset ->
