@@ -49,10 +49,10 @@ fun MainScreen(modifier: Modifier = Modifier, viewModel: MainScreenViewModel) {
     val grid = viewModel.grid.collectAsState()
     println("GETZ.<top>.MainScreen--> grid.value.text=${grid.value.counter}")
     Column(modifier = modifier) {
-        Text(text = "Some Text=${grid.value.counter}", fontSize = 40.sp)
+        Text(text = "Counter=${grid.value.counter}", fontSize = 40.sp)
         Canvas(modifier = modifier.background(Color.LightGray)) {
-            for (i in 0..5) {
-                for (j in 0..5) {
+            for (i in 0 until MainScreenViewModel.ROWS) {
+                for (j in 0 until MainScreenViewModel.COLS) {
                     val calculatedColor = if (grid.value.gridValue[i][j] == 0) Color.Black else Color.White
                     drawRect(color = calculatedColor, topLeft = Offset(i * PIXEL, j * PIXEL), size = Size(PIXEL, PIXEL))
                 }
