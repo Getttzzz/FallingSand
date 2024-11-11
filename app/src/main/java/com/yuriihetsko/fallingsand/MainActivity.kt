@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yuriihetsko.fallingsand.ui.theme.FallingSandTheme
 
-const val PIXEL = 50f
+const val PIXEL = 100f
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
