@@ -26,14 +26,11 @@ class MainScreenViewModel : ViewModel() {
                 val grid = _grid.value.gridValue
                 val nextGrid = build2DArrayList(COLS, ROWS)
 
-//                println("GETZ.MainScreenViewModel--> grid=$grid")
-                //grid=[[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [1, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]
-
+                // [0,0,0,0,0]
                 // [0,0,0,0,0]
                 // [0,0,0,0,0]
                 // [0,0,0,0,0]
                 // [0,0,1,0,0]
-                // [0,0,0,0,0]
 
                 for (i in 0 until COLS) {
                     for (j in 0 until ROWS) {
@@ -41,10 +38,17 @@ class MainScreenViewModel : ViewModel() {
 
                         if (state == 1) {
 
-                            val below = if (j < ROWS - 1) grid[i][j + 1] else 0
-
-                            if (below == 0 && j < ROWS - 1) {
+                            val below = if (j < ROWS - 1) grid[i][j + 1] else -1 //-1 is to set 1 for current ij
+                            val belowR = if (i < COLS - 1 && j< ROWS-1) grid[i + 1][j+1] else -1
+                            val belowL = if (i > 0 && j< ROWS-1) grid[i - 1][j+1] else -1
+                            if (j == ROWS -1){
+                                nextGrid[i][j] = 1
+                            }else if (below == 0) {
                                 nextGrid[i][j + 1] = 1
+                            } else if (belowR == 0) {
+                                nextGrid[i + 1][j] = 1
+                            } else if (belowL == 0) {
+                                nextGrid[i - 1][j] = 1
                             } else {
                                 nextGrid[i][j] = 1
                             }
@@ -58,11 +62,11 @@ class MainScreenViewModel : ViewModel() {
     }
 
     fun setClickPosition(xParam: Float, yParam: Float) {
-        val xTemp = (xParam - PIXEL / 2).coerceAtLeast(0f)
-        val yTemp = (yParam - PIXEL / 2).coerceAtLeast(0f)
+        val xTemp = (xParam - PIXEL_SIZE / 2).coerceAtLeast(0f)
+        val yTemp = (yParam - PIXEL_SIZE / 2).coerceAtLeast(0f)
 
-        val xRound = round(xTemp / PIXEL).toInt()
-        val yRound = round(yTemp / PIXEL).toInt()
+        val xRound = round(xTemp / PIXEL_SIZE).toInt()
+        val yRound = round(yTemp / PIXEL_SIZE).toInt()
 
         val x = if (xRound <= 0) 0 else if (xRound >= COLS) COLS - 1 else xRound
         val y = if (yRound <= 0) 0 else if (yRound >= ROWS) ROWS - 1 else yRound
@@ -76,9 +80,10 @@ class MainScreenViewModel : ViewModel() {
     }
 
     companion object {
-        const val UPDATE_DELAY = 500L
-        const val COLS = 5
-        const val ROWS = 5
+        const val UPDATE_DELAY = 30L
+        const val COLS = 100
+        const val ROWS = 150
+        const val PIXEL_SIZE = 10f
     }
 
 }
