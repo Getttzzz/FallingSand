@@ -84,6 +84,34 @@ class MainScreenViewModel : ViewModel() {
 
         println("GETZ.MainScreenViewModel.setClickPosition--> x=$x y=$y")
 
+        dropBunchOfParticles(x, y)
+    }
+
+    private fun dropBunchOfParticles(x: Int, y: Int) {
+        var oldCounter = _grid.value.counter
+        val grid = _grid.value.gridValue
+
+        if (x > 0 && y > 0 && x < COLS - 1 && y < ROWS - 1) {
+            // [0,0,0]
+            // [0,0,0]
+            // [0,0,0]
+            grid[x - 1][y - 1] = 1
+            grid[x - 1][y] = 1
+            grid[x - 1][y + 1] = 1
+
+            grid[x][y - 1] = 1
+            grid[x][y] = 1
+            grid[x][y + 1] = 1
+
+            grid[x + 1][y - 1] = 1
+            grid[x + 1][y] = 1
+            grid[x + 1][y + 1] = 1
+        }
+
+        _grid.value = GridState(grid, ++oldCounter)
+    }
+
+    private fun dropOneParticles(x: Int, y: Int) {
         var oldCounter = _grid.value.counter
         val grid = _grid.value.gridValue
         grid[x][y] = 1
