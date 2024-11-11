@@ -49,14 +49,17 @@ class MainScreenViewModel : ViewModel() {
         }
     }
 
-    fun setClickPosition(x: Float, y: Float) {
-        val xTemp = (x - 25).coerceAtLeast(0f)
-        val yTemp = (y - 25).coerceAtLeast(0f)
+    fun setClickPosition(xParam: Float, yParam: Float) {
+        val xTemp = (xParam - 25).coerceAtLeast(0f)
+        val yTemp = (yParam - 25).coerceAtLeast(0f)
 
-        val xCoord = round(xTemp / 50)
-        val yCoord = round(yTemp / 50)
+        val x = round(xTemp / 50).toInt()
+        val y = round(yTemp / 50).toInt()
 
-        println("GETZ.MainScreenViewModel.setClickPosition--> xCoord=$xCoord yCoord=$yCoord")
+        var oldCounter = _grid.value.counter
+        val grid = _grid.value.gridValue
+        grid[x][y] = 1
+        _grid.value = GridState(grid, ++oldCounter)
     }
 
     companion object {
