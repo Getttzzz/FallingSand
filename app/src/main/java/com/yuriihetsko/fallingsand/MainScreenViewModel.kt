@@ -11,20 +11,31 @@ import kotlin.random.Random
 
 class MainScreenViewModel : ViewModel() {
 
-    data class GridState(val gridValue: ArrayList<ArrayList<Int>>, val counter: Int, val hueValue: Int)
+    data class GridState(
+        val gridValue: ArrayList<ArrayList<Int>>,
+        val counter: Int = 0,
+        val hueValue: Int = 144
+    )
 
-    private val _grid = MutableStateFlow(GridState(build2DArrayList(COLS, ROWS), 0, 200))
+    data class SettingState(
+        val grainSize: Float = GRAIN_SIZE,
+        val updateSpeed: Long = UPDATE_SPEED,
+        val colorChangingSpeed: Float = COLOR_CHANGING_SPEED,
+    )
+
+    private val _grid = MutableStateFlow(GridState(build2DArrayList(COLS, ROWS)))
     val grid = _grid.asStateFlow()
 
-    init {
-        _grid.value.gridValue[2][0] = 1
+    private val _settingsState = MutableStateFlow(SettingState())
+    val settingState = _settingsState.asStateFlow()
 
+    init {
         viewModelScope.launch {
             while (true) {
-                delay(UPDATE_DELAY)
+                delay(_settingsState.value.updateSpeed)
 
                 var oldCounter = _grid.value.counter
-                var hueValue = _grid.value.hueValue
+                val hueValue = _grid.value.hueValue
                 val grid = _grid.value.gridValue
                 val nextGrid = build2DArrayList(COLS, ROWS)
 
@@ -74,11 +85,12 @@ class MainScreenViewModel : ViewModel() {
     }
 
     fun setClickPosition(xParam: Float, yParam: Float) {
-        val xTemp = (xParam - PIXEL_SIZE / 2).coerceAtLeast(0f)
-        val yTemp = (yParam - PIXEL_SIZE / 2).coerceAtLeast(0f)
+        val grainSize = _settingsState.value.grainSize
+        val xTemp = (xParam - grainSize / 2).coerceAtLeast(0f)
+        val yTemp = (yParam - grainSize / 2).coerceAtLeast(0f)
 
-        val xRound = round(xTemp / PIXEL_SIZE).toInt()
-        val yRound = round(yTemp / PIXEL_SIZE).toInt()
+        val xRound = round(xTemp / grainSize).toInt()
+        val yRound = round(yTemp / grainSize).toInt()
 
         val x = if (xRound <= 0) 0 else if (xRound >= COLS) COLS - 1 else xRound
         val y = if (yRound <= 0) 0 else if (yRound >= ROWS) ROWS - 1 else yRound
@@ -87,9 +99,10 @@ class MainScreenViewModel : ViewModel() {
     }
 
     private fun dropBunchOfParticles(x: Int, y: Int) {
-        var oldCounter = _grid.value.counter
+        val oldCounter = _grid.value.counter
         val grid = _grid.value.gridValue
         var hueValue = _grid.value.hueValue
+        val updatedHueValue = (hueValue + _settingsState.value.colorChangingSpeed).toInt()
 
         if (x > 0 && y > 0 && x < COLS - 1 && y < ROWS - 1) {
             // [0,0,0]
@@ -108,23 +121,18 @@ class MainScreenViewModel : ViewModel() {
             grid[x + 1][y + 1] = hueValue
         }
 
-        _grid.value = GridState(grid, oldCounter, ++hueValue)
-    }
-
-    private fun dropOneParticles(x: Int, y: Int) {
-        var oldCounter = _grid.value.counter
-        val grid = _grid.value.gridValue
-        var hueValue = _grid.value.hueValue
-
-        grid[x][y] = 1
-        _grid.value = GridState(grid, ++oldCounter, ++hueValue)
+        _grid.value = GridState(grid, oldCounter, updatedHueValue)
     }
 
     companion object {
-        const val UPDATE_DELAY = 5L
-        const val COLS = 100
-        const val ROWS = 150
-        const val PIXEL_SIZE = 10f
+        const val GRAIN_SIZE = 20f
+
+        const val UPDATE_SPEED = 3L
+
+        const val COLOR_CHANGING_SPEED = 1f
+
+        const val COLS = 50
+        const val ROWS = 108
     }
 
 }

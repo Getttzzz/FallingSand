@@ -3,6 +3,7 @@ package com.yuriihetsko.fallingsand
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -24,14 +25,13 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.yuriihetsko.fallingsand.MainScreenViewModel.Companion.PIXEL_SIZE
 import com.yuriihetsko.fallingsand.ui.theme.FallingSandTheme
 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        enableEdgeToEdge()
+        enableEdgeToEdge()
         setContent {
             FallingSandTheme {
                 val viewModel = viewModel<MainScreenViewModel>()
@@ -48,6 +48,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(modifier: Modifier = Modifier, viewModel: MainScreenViewModel) {
     val grid by viewModel.grid.collectAsState()
+    val settings by viewModel.settingState.collectAsState()
 
     Column(modifier = modifier) {
         Canvas(
@@ -55,14 +56,13 @@ fun MainScreen(modifier: Modifier = Modifier, viewModel: MainScreenViewModel) {
                 .fillMaxSize()
                 .background(Color.LightGray)
                 .pointerInput(Unit) {
-                    detectDragGestures { change, dragAmount ->
+                    detectDragGestures { change, _ ->
                         viewModel.setClickPosition(change.position.x, change.position.y)
                     }
                 }
         ) {
             for (i in 0 until MainScreenViewModel.COLS) {
                 for (j in 0 until MainScreenViewModel.ROWS) {
-
                     val calculatedHSBColor = if (grid.gridValue[i][j] > 0) {
                         HSBColor(grid.gridValue[i][j].toFloat(), 1f, 1f)
                     } else {
@@ -70,8 +70,8 @@ fun MainScreen(modifier: Modifier = Modifier, viewModel: MainScreenViewModel) {
                     }
                     drawRect(
                         color = calculatedHSBColor.toColor(),
-                        topLeft = Offset(i * PIXEL_SIZE, j * PIXEL_SIZE),
-                        size = Size(PIXEL_SIZE, PIXEL_SIZE)
+                        topLeft = Offset(i * settings.grainSize, j * settings.grainSize),
+                        size = Size(settings.grainSize, settings.grainSize)
                     )
                 }
             }
