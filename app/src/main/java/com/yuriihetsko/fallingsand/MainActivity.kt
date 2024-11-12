@@ -22,6 +22,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -38,6 +39,7 @@ class MainActivity : ComponentActivity() {
                 MainScreen(
                     Modifier
                         .fillMaxSize()
+                        .background(Color.Black)
                         .padding(WindowInsets.statusBars.asPaddingValues()), viewModel
                 )
             }
@@ -48,12 +50,17 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(modifier: Modifier = Modifier, viewModel: MainScreenViewModel) {
     val grid by viewModel.grid.collectAsState()
-    val settings by viewModel.settingState.collectAsState()
 
     Column(modifier = modifier) {
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
+                .onSizeChanged { newSize ->
+                    if (!grid.isCanvasSizeCalculated) {
+                        // This block will run only the first time the Canvas is drawn
+                        viewModel.endlessDrawing(newSize.width, newSize.height)
+                    }
+                }
                 .background(Color.LightGray)
                 .pointerInput(Unit) {
                     detectDragGestures { change, _ ->
@@ -61,17 +68,19 @@ fun MainScreen(modifier: Modifier = Modifier, viewModel: MainScreenViewModel) {
                     }
                 }
         ) {
-            for (i in 0 until MainScreenViewModel.COLS) {
-                for (j in 0 until MainScreenViewModel.ROWS) {
-                    val calculatedHSBColor = if (grid.gridValue[i][j] > 0) {
-                        HSBColor(grid.gridValue[i][j].toFloat(), 1f, 1f)
+            if (!grid.isCanvasSizeCalculated) return@Canvas
+            for (i in 0 until grid.cols) {
+                for (j in 0 until grid.rows) {
+                    val currValue = grid.gridValue?.get(i)?.get(j)!!
+                    val calculatedHSBColor = if (currValue > 0) {
+                        HSBColor(currValue.toFloat(), MainScreenViewModel.SATURATION, MainScreenViewModel.BRIGHTNESS)
                     } else {
                         HSBColor(0f, 0f, 0f)
                     }
                     drawRect(
                         color = calculatedHSBColor.toColor(),
-                        topLeft = Offset(i * settings.grainSize, j * settings.grainSize),
-                        size = Size(settings.grainSize, settings.grainSize)
+                        topLeft = Offset(i * MainScreenViewModel.GRAIN_SIZE, j * MainScreenViewModel.GRAIN_SIZE),
+                        size = Size(MainScreenViewModel.GRAIN_SIZE, MainScreenViewModel.GRAIN_SIZE)
                     )
                 }
             }
