@@ -63,10 +63,13 @@ fun MainScreen(modifier: Modifier = Modifier, viewModel: MainScreenViewModel) {
             for (i in 0 until MainScreenViewModel.COLS) {
                 for (j in 0 until MainScreenViewModel.ROWS) {
 
-                    val calculatedColor = if (grid.gridValue[i][j] == 0) Color.Black else Color.White
-
+                    val calculatedHSBColor = if (grid.gridValue[i][j] > 0) {
+                        HSBColor(grid.gridValue[i][j].toFloat(), 1f, 1f)
+                    } else {
+                        HSBColor(0f, 0f, 0f)
+                    }
                     drawRect(
-                        color = calculatedColor,
+                        color = calculatedHSBColor.toColor(),
                         topLeft = Offset(i * PIXEL_SIZE, j * PIXEL_SIZE),
                         size = Size(PIXEL_SIZE, PIXEL_SIZE)
                     )
