@@ -13,12 +13,13 @@ class MainScreenViewModel : ViewModel() {
 
     data class GridState(
         val gridValue: ArrayList<ArrayList<Int>>? = null,
-        val counter: Int = 0,
         val hueValue: Int = 144,
 
         val isCanvasSizeCalculated: Boolean = false,
         val cols: Int = -1,
         val rows: Int = -1,
+
+        val shouldUpdateNextFrame:Boolean = true,
     )
 
     private val _grid = MutableStateFlow(GridState())
@@ -29,65 +30,75 @@ class MainScreenViewModel : ViewModel() {
         val rows = (height / GRAIN_SIZE).toInt()
 
         viewModelScope.launch {
+
             while (true) {
 
-                var oldCounter = _grid.value.counter
-                val hueValue = _grid.value.hueValue
-                val grid = _grid.value.gridValue ?: build2DArrayList(cols, rows)
-                val nextGrid = build2DArrayList(cols, rows)
-
-                // [0,0,0,0,0]
-                // [0,0,0,0,0]
-                // [0,0,0,0,0]
-                // [0,0,0,0,0]
-                // [0,0,1,0,0]
-
-                for (i in 0 until cols) {
-                    for (j in 0 until rows) {
-                        val state = grid[i][j]
-
-                        if (state > 0) {
-
-                            val below = if (j < rows - 1) grid[i][j + 1] else -1 //-1 is to set 1 for current ij
-
-                            val dir = if (Random.nextBoolean()) 1 else -1
-
-                            val belowA = if (i + dir >= 0 && i + dir <= cols - 1 && j < rows - 1) {
-                                grid[i + dir][j + 1]
-                            } else -1
-
-                            val belowB = if (i - dir >= 0 && i - dir <= cols - 1 && j < rows - 1) {
-                                grid[i - dir][j + 1]
-                            } else -1
-
-
-                            if (j == rows - 1) {
-                                nextGrid[i][j] = grid[i][j]
-                            } else if (below == 0) {
-                                nextGrid[i][j + 1] = grid[i][j]
-                            } else if (belowA == 0) {
-                                nextGrid[i + dir][j + 1] = grid[i][j]
-                            } else if (belowB == 0) {
-                                nextGrid[i - dir][j + 1] = grid[i][j]
-                            } else {
-                                nextGrid[i][j] = grid[i][j]
-                            }
-                        }
-                    }
+                if (_grid.value.shouldUpdateNextFrame){
+                    redraw(cols, rows)
                 }
-
-                _grid.value = GridState(
-                    gridValue = nextGrid,
-                    counter = ++oldCounter,
-                    hueValue = hueValue,
-                    cols = cols,
-                    rows = rows,
-                    isCanvasSizeCalculated = true
-                )
 
                 delay(UPDATE_SPEED)
             }
         }
+    }
+
+    private fun redraw(cols: Int, rows: Int) {
+        val hueValue = _grid.value.hueValue
+        val grid = _grid.value.gridValue ?: build2DArrayList(cols, rows)
+        val nextGrid = build2DArrayList(cols, rows)
+
+        // [0,0,0,0,0]
+        // [0,0,0,0,0]
+        // [0,0,0,0,0]
+        // [0,0,0,0,0]
+        // [0,0,1,0,0]
+
+        for (i in 0 until cols) {
+            for (j in 0 until rows) {
+                val state = grid[i][j]
+
+                if (state > 0) {
+
+                    val below = if (j < rows - 1) grid[i][j + 1] else -1 //-1 is to set 1 for current ij
+
+                    val dir = if (Random.nextBoolean()) 1 else -1
+
+                    val belowA = if (i + dir >= 0 && i + dir <= cols - 1 && j < rows - 1) {
+                        grid[i + dir][j + 1]
+                    } else -1
+
+                    val belowB = if (i - dir >= 0 && i - dir <= cols - 1 && j < rows - 1) {
+                        grid[i - dir][j + 1]
+                    } else -1
+
+
+                    if (j == rows - 1) {
+                        nextGrid[i][j] = grid[i][j]
+                    } else if (below == 0) {
+                        nextGrid[i][j + 1] = grid[i][j]
+                    } else if (belowA == 0) {
+                        nextGrid[i + dir][j + 1] = grid[i][j]
+                    } else if (belowB == 0) {
+                        nextGrid[i - dir][j + 1] = grid[i][j]
+                    } else {
+                        nextGrid[i][j] = grid[i][j]
+                    }
+                }
+            }
+        }
+
+        val oldGridHash = _grid.value.gridValue.hashCode()
+        val newGridHash = nextGrid.hashCode()
+        val shouldUpdateNextFrame = oldGridHash != newGridHash
+
+        _grid.value = GridState(
+            shouldUpdateNextFrame = shouldUpdateNextFrame,
+            gridValue = nextGrid,
+            hueValue = hueValue,
+            cols = cols,
+            rows = rows,
+            isCanvasSizeCalculated = true
+        )
     }
 
     fun setClickPosition(xParam: Float, yParam: Float) {
@@ -129,7 +140,11 @@ class MainScreenViewModel : ViewModel() {
         //update color for next drop of sand
         val updatedHueValue = (hueValue + COLOR_CHANGING_SPEED).toInt()
 
-        _grid.value = _grid.value.copy(gridValue = grid, hueValue = updatedHueValue)
+        _grid.value = _grid.value.copy(
+            gridValue = grid,
+            hueValue = updatedHueValue,
+            shouldUpdateNextFrame = true
+        )
     }
 
     companion object {
