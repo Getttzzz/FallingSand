@@ -19,7 +19,7 @@ class MainScreenViewModel : ViewModel() {
         val cols: Int = -1,
         val rows: Int = -1,
 
-        val shouldUpdateNextFrame:Boolean = true,
+        val shouldUpdateNextFrame: Boolean = true,
     )
 
     private val _grid = MutableStateFlow(GridState())
@@ -30,10 +30,9 @@ class MainScreenViewModel : ViewModel() {
         val rows = (height / GRAIN_SIZE).toInt()
 
         viewModelScope.launch {
-
             while (true) {
 
-                if (_grid.value.shouldUpdateNextFrame){
+                if (_grid.value.shouldUpdateNextFrame) {
                     redraw(cols, rows)
                 }
 
@@ -122,19 +121,12 @@ class MainScreenViewModel : ViewModel() {
         val grid = _grid.value.gridValue ?: error("Shouldn't be null")
         val hueValue = _grid.value.hueValue
 
-        //todo make a for in for to fill the matrix, yo man
         if (x > 0 && y > 0 && x < cols - 1 && y < rows - 1) {
-            grid[x - 1][y - 1] = hueValue
-            grid[x - 1][y] = hueValue
-            grid[x - 1][y + 1] = hueValue
-
-            grid[x][y - 1] = hueValue
-            grid[x][y] = hueValue
-            grid[x][y + 1] = hueValue
-
-            grid[x + 1][y - 1] = hueValue
-            grid[x + 1][y] = hueValue
-            grid[x + 1][y + 1] = hueValue
+            for (i in x - 1..x + 1) {
+                for (j in y - 1..y + 1) {
+                    grid[i][j] = hueValue
+                }
+            }
         }
 
         //update color for next drop of sand
