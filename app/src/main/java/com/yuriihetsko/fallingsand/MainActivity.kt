@@ -21,8 +21,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -50,6 +52,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen(modifier: Modifier = Modifier, viewModel: MainScreenViewModel) {
     val grid by viewModel.grid.collectAsState()
+    val haptic = LocalHapticFeedback.current
 
     Column(modifier = modifier) {
         Canvas(
@@ -64,6 +67,7 @@ fun MainScreen(modifier: Modifier = Modifier, viewModel: MainScreenViewModel) {
                 .background(Color.LightGray)
                 .pointerInput(Unit) {
                     detectDragGestures { change, _ ->
+                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         viewModel.setClickPosition(change.position.x, change.position.y)
                     }
                 }
