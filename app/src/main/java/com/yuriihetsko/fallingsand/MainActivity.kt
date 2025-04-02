@@ -9,11 +9,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -38,12 +38,31 @@ class MainActivity : ComponentActivity() {
         setContent {
             FallingSandTheme {
                 val viewModel = viewModel<MainScreenViewModel>()
-                MainScreen(
-                    Modifier
-                        .fillMaxSize()
-                        .background(Color.Black)
-                        .padding(WindowInsets.statusBars.asPaddingValues()), viewModel
-                )
+
+                /**
+                 * It is better to use Scaffold with "innerPaddings" and apply it to the root layout
+                 * in order to handle paddings from top (systemBar), from bottom (navigation),
+                 * or even camera padding when the phone is rotated.
+                 *
+                 * For LazyColumn use parameter contentPadding "contentPadding = innerPadding".
+                 * For any other root container use just modifier "modifier = Modifier.padding(innerPaddings)".
+                 * */
+                Scaffold(
+                    /**
+                     * And for camera padding use this parameter "contentWindowInsets = WindowInsets.safeDrawing".
+                     * or "safeContent".
+                     * */
+                    contentWindowInsets = WindowInsets.safeDrawing
+                ) { innerPaddings ->
+                    MainScreen(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black)
+                            .padding(innerPaddings),
+                        viewModel = viewModel
+                    )
+                }
+
             }
         }
     }
@@ -64,7 +83,7 @@ fun MainScreen(modifier: Modifier = Modifier, viewModel: MainScreenViewModel) {
                         viewModel.endlessDrawing(newSize.width, newSize.height)
                     }
                 }
-                .background(Color.LightGray)
+                .background(Color.Black)
                 .pointerInput(Unit) {
                     detectDragGestures { change, _ ->
                         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)

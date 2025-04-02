@@ -140,8 +140,8 @@ class MainScreenViewModel : ViewModel() {
     }
 
     companion object {
-        const val GRAIN_SIZE = 20f
-        const val UPDATE_SPEED = 10L
+        const val GRAIN_SIZE = 25f
+        const val UPDATE_SPEED = 15L
         const val COLOR_CHANGING_SPEED = 1f
 
         const val SATURATION = 0.7f
